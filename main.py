@@ -1,4 +1,4 @@
-from cv2.cv2 import cv2
+from cv2 import cv2
 import numpy as np
 
 
@@ -17,4 +17,6 @@ def create_net(input_nodes, hidden_nodes, out_nodes):
     hidden_out_w = (np.random.rand(out_nodes, hidden_nodes) - 0.5)
     return input_hidden_w, hidden_out_w
 
+
+#2
 
