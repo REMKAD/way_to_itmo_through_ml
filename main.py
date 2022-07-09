@@ -1,5 +1,10 @@
 from cv2 import cv2
 import numpy as np
+from scipy import special
+
+
+def fun_active(x):
+    return special.expit(x)
 
 
 def init_net():
