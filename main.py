@@ -19,3 +19,4 @@ def create_net(input_nodes, hidden_nodes, out_nodes):
 
 
 
+print(1)
