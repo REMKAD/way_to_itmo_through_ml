@@ -18,10 +18,4 @@ def create_net(input_nodes, hidden_nodes, out_nodes):
     return input_hidden_w, hidden_out_w
 
 
-#2
-
-
-'''
-Я супер крутой remkad зовут
-'''
 
