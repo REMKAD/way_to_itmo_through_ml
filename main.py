@@ -20,3 +20,8 @@ def create_net(input_nodes, hidden_nodes, out_nodes):
 
 #2
 
+
+'''
+Я супер крутой remkad зовут
+'''
+
