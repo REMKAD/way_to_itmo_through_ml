@@ -18,5 +18,3 @@ def create_net(input_nodes, hidden_nodes, out_nodes):
     return input_hidden_w, hidden_out_w
 
 
-
-print(1)
