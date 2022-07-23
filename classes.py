@@ -1,47 +1,46 @@
-from cv2 import cv2
 import numpy as np
-from scipy import special
+import cv2
+import matplotlib.pyplot as plt
+import pytesseract
+from PIL import Image
+
+# считываем решение и переводим его в двоичный вид
+img = cv2.imread('img\po.jpg')
+img_binary = cv2.threshold(img, 145, 255, cv2.THRESH_BINARY)[1]
+# разбиваем цельное решение на отдельные строчки и записываем картинки отдельных строчек в список
+t = False
+gate = 0
+data = []
+plt.imshow(img_binary)
+plt.show()
+x = 0
+y = 0
+while y != img_binary.shape[0]:
+    if img_binary[y, x].tolist() != [255, 255, 255]:
+        t = True
+        gate = y
+        while t:
+            for x_1 in range(img_binary.shape[1]):
+                if img_binary[y, x_1].tolist() != [255, 255, 255]:
+                    y += 1
+                    break
+            else:
+                t = False
+                if abs(gate-y) > 25:
+                    data.append(img[gate:y, 0:img_binary.shape[1]])
+    else:
+        if x != img_binary.shape[1]-1:
+            x += 1
+        else:
+            y += 1
+            x = 0
+        t = False
+
+# вывод каждой отдельной строчки
+for i in range(len(data)):
+    cv2.imshow('', data[i])
+    cv2.waitKey(0)
 
 
-def fun_active(x):
-    return special.expit(x)
-
-
-def init_net():
-    input_nodes = 784
-    print('Введите число скрытых нейронов')
-    hidden_nodes = int(input())
-    out_nodes = 10
-    print('Введите скорость обучения')
-    learn_node = float(input())
-    return input_nodes, hidden_nodes, out_nodes, learn_node
-
-
-def create_net(input_nodes, hidden_nodes, out_nodes):
-    input_hidden_w = (np.random.rand(hidden_nodes, input_nodes) - 0.5)
-    hidden_out_w = (np.random.rand(out_nodes, hidden_nodes) - 0.5)
-    return input_hidden_w, hidden_out_w
-
-
-def query(input_hidden_w, hidden_out_w, inputs_list):
-    inputs_sig = np.array(inputs_list, ndmin = 2).T
-    hidden_inputs = np.dot(input_hidden_w, inputs_sig)
-    hidden_out = fun_active(hidden_inputs)
-    final_inputs = np.dot(hidden_out_w, hidden_out)
-    final_out = fun_active(final_inputs)
-    return final_out
-
-
-def treyn(target_list, input_list, input_hidden_w, hidden_out_w, learn_node):
-    targgets = np.array(target_list, ndmin=2).T
-    inputs_sig = np.array(input_list, ndmin=2).T
-    hidden_inputs = np.dot(input_hidden_w, inputs_sig)
-    hidden_out = fun_active(hidden_inputs)
-    final_inputs = np.dot(hidden_out_w, hidden_out)
-    final_out = fun_active(final_inputs)
-    out_errors = targgets - final_out
-    hidden_errors = np.dot(hidden_out_w.T, out_errors)
-    hidden_out_w += learn_node * np.dot((out_errors * final_out * (1 - final_out)), np.transpose(hidden_out))
-    input_hidden_w += learn_node * np.dot((hidden_errors * hidden_out * (1 - hidden_out), np.transpose(inputs_sig)))
-
-
+for i in range(10):
+    print(f'{i}cosx + {10-i}sinx =  0')
