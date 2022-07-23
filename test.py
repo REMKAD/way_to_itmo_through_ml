@@ -33,7 +33,7 @@ with open('ans.json', 'w') as f:
     f.write(json.dumps(b))
 
     # считываем data
-with open('ans.json') as f:
+with open('C:\\Users\\1\\PycharmProjects\\way_to_itmo_through_ml\\ans.json') as f:
     train_data = json.load(f)
 
     # выводим длину train len
@@ -50,31 +50,31 @@ val_data_splitted = train_data[train_len:]
 print('train len after split', len(train_data_splitted))
 print('val after split', len(val_data_splitted))
 
-with open('train_ans_splitted.json', 'w') as f:
+with open('C:\\Users\\1\\PycharmProjects\\way_to_itmo_through_ml\\train_ans_splitted.json', 'w') as f:
     json.dump(dict(train_data_splitted), f)
 
-with open('val_ans_splitted.json', 'w') as f:
+with open('C:\\Users\\1\\PycharmProjects\\way_to_itmo_through_ml\\val_ans_splitted.json', 'w') as f:
     json.dump(dict(val_data_splitted), f)
 
 # 2
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 config_json = {
-    "alphabet": "cosinx=-+1234567890()pimqrt",
-    "save_dir": "new_data",
-    "num_epochs": 5,
+    "alphabet": "scoinx=-+1234567890()pimqrt",
+    "save_dir": "C:\\Users\\1\\PycharmProjects\\way_to_itmo_through_ml\\new_data",
+    "num_epochs": 500,
     "image": {
         "width": 256,
         "height": 32
     },
     "train": {
-        "root_path": "data1set",
-        "json_path": "train_ans_splitted.json",
+        "root_path": "C:\\Users\\1\\PycharmProjects\\way_to_itmo_through_ml\\data1set",
+        "json_path": "C:\\Users\\1\\PycharmProjects\\way_to_itmo_through_ml\\train_ans_splitted.json",
         "batch_size": 64
     },
     "val": {
-        "root_path": "data1set",
-        "json_path": "val_ans_splitted.json",
+        "root_path": "C:\\Users\\1\\PycharmProjects\\way_to_itmo_through_ml\\data1set",
+        "json_path": "C:\\Users\\1\\PycharmProjects\\way_to_itmo_through_ml\\val_ans_splitted.json",
         "batch_size": 128
     }
 }
@@ -89,7 +89,9 @@ def collate_fn(batch):
     return images, texts, enc_pad_texts, text_lens
 
 
-def get_data_loader(transforms, json_path, root_path, tokenizer, batch_size, drop_last):
+def get_data_loader(
+    transforms, json_path, root_path, tokenizer, batch_size, drop_last
+):
     dataset = OCRDataset(json_path, root_path, tokenizer, transforms)
     data_loader = torch.utils.data.DataLoader(
         dataset=dataset,
@@ -393,11 +395,17 @@ def train(config):
     best_acc = np.inf
     acc_avg = val_loop(val_loader, model, tokenizer, DEVICE)
     scheduler.step(acc_avg)
-    if acc_avg > best_acc:
-        best_acc = acc_avg
-        model_save_path = os.path.join(config["save_dir"], f'model-{epoch}-{acc_avg:.4f}.ckpt')
-        torch.save(model.state_dict(), model_save_path)
-        print('Model weights saved')
+    for epoch in range(config['num_epochs']):
+        loss_avg = train_loop(train_loader, model, criterion, optimizer, epoch)
+        acc_avg = val_loop(val_loader, model, tokenizer, DEVICE)
+        scheduler.step(acc_avg)
+        if acc_avg > best_acc:
+            best_acc = acc_avg
+            model_save_path = os.path.join(
+                config["save_dir"], f'model-{epoch}-{acc_avg:.4f}.ckpt')
+            torch.save(model.state_dict(), model_save_path)
+            print('Model weights saved')
 
 
-train(config_json)
+if __name__=='__main__':
+    train(config_json)

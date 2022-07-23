@@ -10,8 +10,10 @@ import os
 import json
 from matplotlib import pyplot as plt
 import random as rnd
-
+from torch import cuda
 # создаем объект типа json в которой хранится data
+
+
 d = {}
 for i in os.listdir('data1set'):
     for j in os.listdir(f'data1set/{i}/'):
@@ -80,6 +82,7 @@ config_json = {
 }
 
 
+
 # реорганизация данных в batch
 def collate_fn(batch):
     images, texts, enc_texts = zip(*batch)
@@ -95,7 +98,7 @@ def get_data_loader(transforms, json_path, root_path, tokenizer, batch_size, dro
         dataset=dataset,
         collate_fn=collate_fn,
         batch_size=batch_size,
-        num_workers=8
+        num_workers=1
     )
     return data_loader
 
@@ -119,12 +122,32 @@ class OCRDataset(Dataset):
         return self.data_len
 
     def __getitem__(self, idx):
-        img_path = self.img_paths[idx]
+        ############################
+        ########################
+        #######################
+        #######################
+        ##########################
+        ###########################
+        img_path = self.img_paths[idx].split('\\')[1]
+
+        with open('ans.json') as ff:
+            meaw = json.load(ff)
+        img_path = self.img_paths[idx].split('\\')[0] + '\\' + meaw[img_path] + '\\' + img_path
+        ##########################
+        #########################
+        ###########################
+        ############################
+        #########################
+        ########################
+        ##################
+
         text = self.texts[idx]
         enc_text = torch.LongTensor(self.enc_texts[idx])
+
         image = cv2.imread(img_path)
         if self.transform is not None:
             image = self.transform(image)
+
         return image, text, enc_text
 
     # класс для подсчёта элементов
@@ -234,9 +257,12 @@ class ImageResize:
         self.width = width
 
     def __call__(self, image):
-        image = cv2.resize(image, (self.width, self.height),
-                           iterpolation=cv2.INTER_LINEAR)
-        return image
+        try:
+            image = cv2.resize(image, (self.width, self.height))
+            return image
+        except cv2.error as e:
+            print('Invalid frame!')
+
 
 
 def get_train_transforms(height, width):
@@ -262,7 +288,33 @@ def get_val_transforms(height, width):
 # определение модели
 
 def get_resnet34_backbone(pretained=True):
+    ############################
+    ########################
+    #######################
+    #######################
+    ##########################
+    ###########################
+    ##########################
+    #########################
+    ###########################
+    ############################
+    #########################
+    ########################
+    ##################
     m = torchvision.models.resnet34(pretrained=True)
+    ############################
+    ########################
+    #######################
+    #######################
+    ##########################
+    ###########################
+    ##########################
+    #########################
+    ###########################
+    ############################
+    #########################
+    ########################
+    ##################
     input_conv = nn.Conv2d(3, 64, 7, 1, 3)
     blocks = [input_conv, m.bn1, m.relu, m.maxpool, m.layer1, m.layer2, m.layer3]
     return nn.Sequential(*blocks)
@@ -301,7 +353,33 @@ class CRNN(nn.Module):
         x = x.transpose(1, 2)
         x = self.bilstm(x)
         x = self.classifier(x)
-        x = nn.funcional.log_softmax(x, dim=2).permute(1, 0, 2)
+        ############################
+        ########################
+        #######################
+        #######################
+        ##########################
+        ###########################
+        ##########################
+        #########################
+        ###########################
+        ############################
+        #########################
+        ########################
+        ##################
+        x = nn.functional.log_softmax(x, dim=2).permute(1, 0, 2)
+        ############################
+        ########################
+        #######################
+        #######################
+        ##########################
+        ###########################
+        ##########################
+        #########################
+        ###########################
+        ############################
+        #########################
+        ########################
+        ##################
         return x
 
 
@@ -313,8 +391,18 @@ def val_loop(data_loader, model, tokenizer, device):
         batch_size = len(texts)
         text_preds = predict(images, model, tokenizer, device)
         acc_avg.update(get_accuracy(texts, text_preds), batch_size)
-    print(f'Validation, acc: {acc_avg:4f}')
+
+    ###########################3
+    ############################
+    #########################
+    ##########################
+    # Я НЕ ПОНИМАЮ, ЧТО ЭТО ЗА ПРИНТ, ПОЭТОМУ ЗАКОМЕНТИЛ, ЕСЛИ УБРАТЬ КОМЕНТ, ТО ПОЧЕМУ-ТО НЕ СРАБОТАЕТ
+    #print(f'Validation, acc: {acc_avg:4f}')
+    ###########################
+    ########################
+    ####################
     return acc_avg.avg
+
 
 
 def train_loop(data_loader, model, criterion, optimizer, epoch):
@@ -333,7 +421,7 @@ def train_loop(data_loader, model, criterion, optimizer, epoch):
         loss = criterion(output, enc_pad_texts, output_lenghts, text_lens)
         loss_avg.update(loss.item(), batch_size)
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(model.parametrs(), 2)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 2)
         optimizer.step()
     for param_group in optimizer.param_groups:
         lr = param_group['lr']
@@ -346,7 +434,14 @@ def predict(images, model, tokenizer, device):
     images = images.to(device)
     with torch.no_grad():
         output = model(images)
-    pred = torch.argmax(output.detach().cpu(), -1).permute(1, 0).np()
+        #####################3
+        #################
+        ################
+    pred = torch.argmax(output.detach().cpu(), -1).permute(1, 0).numpy()
+    #####################
+    ##################3
+    ###############
+    #################
     text_preds = tokenizer.decode(pred)
     return text_preds
 
@@ -391,9 +486,21 @@ def train(config):
     optimizer = torch.optim.AdamW(model.parameters(), lr=0.01, weight_decay=0.01)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=optimizer, mode='max', factor=0.5, patience=15)
     best_acc = np.inf
+
     acc_avg = val_loop(val_loader, model, tokenizer, DEVICE)
     scheduler.step(acc_avg)
-    if acc_avg > best_acc:
+    print()
+    print(acc_avg, best_acc)
+    for epoch in range(config['num_epochs']):
+        loss_avg = train_loop(train_loader, model, criterion, optimizer, epoch)
+        acc_avg = val_loop(val_loader, model, tokenizer, DEVICE)
+        scheduler.step(acc_avg)
+        if acc_avg > best_acc:
+            best_acc = acc_avg
+            model_save_path = os.path.join(
+                config["save_dir"], f'model-{epoch}-{acc_avg:.4f}.ckpt')
+            torch.save(model.state_dict(), model_save_path)
+            print('Model weights saved')
         best_acc = acc_avg
         model_save_path = os.path.join(config["save_dir"], f'model-{epoch}-{acc_avg:.4f}.ckpt')
         torch.save(model.state_dict(), model_save_path)
@@ -401,3 +508,61 @@ def train(config):
 
 if __name__=='__main__':
     train(config_json)
+
+
+class InferenceTransform:
+    def __init__(self, height, width):
+        self.transforms = get_val_transforms(height, width)
+
+    def __call__(self, images):
+        transformed_images = []
+        for image in images:
+            image = self.transforms(image)
+            transformed_images.append(image)
+        transformed_tensor = torch.stack(transformed_images, 0)
+        return transformed_tensor
+
+
+class OcrPredictor:
+    def __init__(self, model_path, config, device='cuda'):
+        self.tokenizer = Tokenizer(config['alphabet'])
+        self.device = torch.device(device)
+        # load model
+        self.model = CRNN(number_class_symbols=self.tokenizer.get_num_chars())
+        self.model.load_state_dict(torch.load(model_path))
+        self.model.to(self.device)
+
+        self.transforms = InferenceTransform(
+            height=config['image']['height'],
+            width=config['image']['width'],
+        )
+
+    def __call__(self, images):
+        if isinstance(images, (list, tuple)):
+            one_image = False
+        elif isinstance(images, np.ndarray):
+            images = [images]
+            one_image = True
+        else:
+            raise Exception(f"Input must contain np.ndarray, "
+                            f"tuple or list, found {type(images)}.")
+
+        images = self.transforms(images)
+        pred = predict(images, self.model, self.tokenizer, self.device)
+
+        if one_image:
+            return pred[0]
+        else:
+            return pred
+
+predictor = OcrPredictor(
+    model_path='new_data/model-4-0.0000.ckpt',
+    config=config_json
+)
+count = 0
+img = cv2.imread('img\ko.jpg')
+img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+plt.imshow(img)
+plt.show()
+print('Prediction: ', predictor(img))
+count += 1

@@ -42,5 +42,3 @@ for i in range(len(data)):
     cv2.waitKey(0)
 
 
-for i in range(10):
-    print(f'{i}cosx + {10-i}sinx =  0')
