@@ -98,7 +98,7 @@ def get_data_loader(transforms, json_path, root_path, tokenizer, batch_size, dro
         dataset=dataset,
         collate_fn=collate_fn,
         batch_size=batch_size,
-        num_workers=1
+        num_workers=4
     )
     return data_loader
 
@@ -510,59 +510,3 @@ if __name__=='__main__':
     train(config_json)
 
 
-class InferenceTransform:
-    def __init__(self, height, width):
-        self.transforms = get_val_transforms(height, width)
-
-    def __call__(self, images):
-        transformed_images = []
-        for image in images:
-            image = self.transforms(image)
-            transformed_images.append(image)
-        transformed_tensor = torch.stack(transformed_images, 0)
-        return transformed_tensor
-
-
-class OcrPredictor:
-    def __init__(self, model_path, config, device='cuda'):
-        self.tokenizer = Tokenizer(config['alphabet'])
-        self.device = torch.device(device)
-        # load model
-        self.model = CRNN(number_class_symbols=self.tokenizer.get_num_chars())
-        self.model.load_state_dict(torch.load(model_path))
-        self.model.to(self.device)
-
-        self.transforms = InferenceTransform(
-            height=config['image']['height'],
-            width=config['image']['width'],
-        )
-
-    def __call__(self, images):
-        if isinstance(images, (list, tuple)):
-            one_image = False
-        elif isinstance(images, np.ndarray):
-            images = [images]
-            one_image = True
-        else:
-            raise Exception(f"Input must contain np.ndarray, "
-                            f"tuple or list, found {type(images)}.")
-
-        images = self.transforms(images)
-        pred = predict(images, self.model, self.tokenizer, self.device)
-
-        if one_image:
-            return pred[0]
-        else:
-            return pred
-
-predictor = OcrPredictor(
-    model_path='new_data/model-4-0.0000.ckpt',
-    config=config_json
-)
-count = 0
-img = cv2.imread('img\ko.jpg')
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-plt.imshow(img)
-plt.show()
-print('Prediction: ', predictor(img))
-count += 1
