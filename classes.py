@@ -26,7 +26,7 @@ while y != img_binary.shape[0]:
             else:
                 t = False
                 if abs(gate-y) > 25:
-                    data.append(img[gate:y, 0:img_binary.shape[1]])
+                    data.append(img[gate:y, 0:img_binary.shape[1]].copy())
     else:
         if x != img_binary.shape[1]-1:
             x += 1

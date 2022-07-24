@@ -6,7 +6,10 @@ import json
 from matplotlib import pyplot as plt
 
 
-# функции для предсказания
+
+
+
+
 class InferenceTransform:
     def __init__(self, height, width):
         self.transforms = get_val_transforms(height, width)
@@ -52,58 +55,25 @@ class OcrPredictor:
         else:
             return pred
 
-# импортируем обученную модель
+
 predictor = OcrPredictor(
-    model_path='new_data/model-4-0.0000.ckpt',
+    model_path='new_data/model-49-0.0505.ckpt',
     config=config_json
 )
 
-# считываем изображение решения и переводим его в двоичный вид
-img = cv2.imread('img\po.jpg')
-img_binary = cv2.threshold(img, 145, 255, cv2.THRESH_BINARY)[1]
 
-# разбиваем цельное решение на отдельные строчки и записываем картинки отдельных строчек в список
-t = False
-gate = 0
-data = []
-plt.imshow(img_binary)
-plt.show()
-x = 0
-y = 0
-while y != img_binary.shape[0]:
-    if img_binary[y, x].tolist() != [255, 255, 255]:
-        t = True
-        gate = y
-        while t:
-            for x_1 in range(img_binary.shape[1]):
-                if img_binary[y, x_1].tolist() != [255, 255, 255]:
-                    y += 1
-                    break
-            else:
-                t = False
-                if abs(gate-y) > 25:
-                    data.append(img[gate:y, 0:img_binary.shape[1]].copy())
-    else:
-        if x != img_binary.shape[1]-1:
-            x += 1
-        else:
-            y += 1
-            x = 0
-        t = False
-
-
-# создаем словарь предсказаний
 pred_json = {}
+
 count = 0
 print_images = True
+for img_name in os.listdir('img/'):
+    img = cv2.imread(f'img/{img_name}')
 
-# считываем строчки и делаем по ним предсказания
-for i in range(len(data)):
-    pred = predictor(data[i])
-    pred_json[i] = pred
+    pred = predictor(img)
+    pred_json[img_name] = pred
 
     if print_images:
-        img = cv2.cvtColor(data[i], cv2.COLOR_BGR2RGB)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         plt.imshow(img)
         plt.show()
         print('Prediction: ', predictor(img))
@@ -114,6 +84,3 @@ for i in range(len(data)):
 
 with open('prediction_HTR.json', 'w') as f:
     json.dump(pred_json, f)
-
-
-
