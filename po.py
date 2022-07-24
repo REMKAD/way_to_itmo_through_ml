@@ -65,22 +65,19 @@ predictor = OcrPredictor(
 pred_json = {}
 
 count = 0
-print_images = True
+
 for img_name in os.listdir('img/'):
     img = cv2.imread(f'img/{img_name}')
 
     pred = predictor(img)
     pred_json[img_name] = pred
 
-    if print_images:
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        plt.imshow(img)
-        plt.show()
-        print('Prediction: ', predictor(img))
-        count += 1
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    plt.imshow(img)
+    plt.show()
+    print('Prediction: ', predictor(img))
 
-    if count > 3:
-        print_images = False
+
 
 with open('prediction_HTR.json', 'w') as f:
     json.dump(pred_json, f)
