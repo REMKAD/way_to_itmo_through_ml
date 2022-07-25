@@ -73,6 +73,7 @@ for img_name in os.listdir('img/'):
     pred_json[img_name] = pred
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
     plt.imshow(img)
     plt.show()
     print('Prediction: ', predictor(img))

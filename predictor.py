@@ -54,14 +54,14 @@ class OcrPredictor:
 
 # импортируем обученную модель
 predictor = OcrPredictor(
-    model_path='new_data/model-4-0.0000.ckpt',
+    model_path='new_data/model-48-0.0476.ckpt',
     config=config_json
 )
 
-# считываем изображение решения и переводим его в двоичный вид
-img = cv2.imread('img\po.jpg')
-img_binary = cv2.threshold(img, 145, 255, cv2.THRESH_BINARY)[1]
+# считываем решение
 
+img = cv2.imread('img\img.jpg')
+img_binary = cv2.threshold(img, 145, 255, cv2.THRESH_BINARY)[1]
 # разбиваем цельное решение на отдельные строчки и записываем картинки отдельных строчек в список
 t = False
 gate = 0
@@ -91,26 +91,54 @@ while y != img_binary.shape[0]:
             x = 0
         t = False
 
+# разбиваем посимвольно
+data_el = []
+k = 0
+for i in range(len(data)):
+    data_el.append([])
+    x = 0
+    y = 0
+    gate = 0
+    img_binary = cv2.threshold(data[i], 145, 255, cv2.THRESH_BINARY)[1]
+    while x != data[i].shape[1]:
+        if img_binary[y, x].tolist() != [255, 255, 255]:
+            t = True
+            gate = x
+            while t:
+                for y_1 in range(data[i].shape[0]):
+                    if img_binary[y_1, x].tolist() != [255, 255, 255]:
+                        x += 1
+                        break
+                else:
+                    t = False
+                    if abs(gate - x) > 5:
+                        data_el[k].append(data[i][0:img_binary.shape[0], gate:x].copy())
 
+        else:
+            if y != img_binary.shape[0] - 1:
+                y += 1
+            else:
+                x += 1
+                y = 0
+            t = False
+
+    k += 1
 # создаем словарь предсказаний
 pred_json = {}
-count = 0
 print_images = True
 
 # считываем строчки и делаем по ним предсказания
-for i in range(len(data)):
-    pred = predictor(data[i])
+for i in range(len(data_el[0])):
+    pred = predictor(data_el[0][i])
     pred_json[i] = pred
 
     if print_images:
-        img = cv2.cvtColor(data[i], cv2.COLOR_BGR2RGB)
+        img = cv2.cvtColor(data_el[0][i], cv2.COLOR_BGR2RGB)
+        img = cv2.resize(img, (256, 256))
         plt.imshow(img)
         plt.show()
         print('Prediction: ', predictor(img))
-        count += 1
 
-    if count > 3:
-        print_images = False
 
 with open('prediction_HTR.json', 'w') as f:
     json.dump(pred_json, f)
