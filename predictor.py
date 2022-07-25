@@ -54,7 +54,7 @@ class OcrPredictor:
 
 # импортируем обученную модель
 predictor = OcrPredictor(
-    model_path='new_data/model-48-0.0476.ckpt',
+    model_path='new_data/model-0-0.0601.ckpt',
     config=config_json
 )
 
@@ -134,7 +134,6 @@ for i in range(len(data_el[0])):
 
     if print_images:
         img = cv2.cvtColor(data_el[0][i], cv2.COLOR_BGR2RGB)
-        img = cv2.resize(img, (256, 256))
         plt.imshow(img)
         plt.show()
         print('Prediction: ', predictor(img))

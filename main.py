@@ -11,6 +11,7 @@ import json
 from matplotlib import pyplot as plt
 import random as rnd
 from torch import cuda
+import gc
 # создаем объект типа json в которой хранится data
 
 
@@ -62,9 +63,9 @@ with open('val_ans_splitted.json', 'w') as f:
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 config_json = {
-    "alphabet": "cosinx=-+1234567890()pimqrt",
+    "alphabet": "cosinx=-+1234567890()pm",
     "save_dir": "new_data",
-    "num_epochs": 50,
+    "num_epochs": 1,
     "image": {
         "width": 256,
         "height": 32
@@ -506,7 +507,11 @@ def train(config):
         torch.save(model.state_dict(), model_save_path)
         print('Model weights saved')
 
+
+
 if __name__=='__main__':
     train(config_json)
+
+
 
 
