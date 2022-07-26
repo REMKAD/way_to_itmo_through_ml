@@ -136,8 +136,7 @@ for j in range(len(data_el)):
 
         if print_images:
             img = cv2.cvtColor(data_el[j][i], cv2.COLOR_BGR2RGB)
-            plt.imshow(img)
-            plt.show()
+
             print('Prediction: ', predictor(img))
             predskaz[j] += predictor(img)
             print(predskaz)
@@ -147,10 +146,11 @@ with open('prediction_HTR.json', 'w') as f:
     json.dump(pred_json, f)
 
 
-sol = 0
-with open('prediction_HTR.json') as f:
-    c = json.load(f)
+x = Symbol('x')
+sol = solveset(predskaz[0].simplify(), x)
+for i in range(len(predskaz)):
+    if solveset(predskaz[i].simplify(), x) != sol:
+        print(f'eror in line{i+1}')
 
-k = [i for i in c.keys()]
 
 

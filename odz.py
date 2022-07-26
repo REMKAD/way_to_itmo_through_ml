@@ -3,6 +3,7 @@ from sympy import Symbol, solve, sqrt, preorder_traversal, simplify, Eq, solvese
 
 x = Symbol('x')
 exp = sin(x) + 2 - 14* x
+exp = exp.simplify()
 print(solveset(exp, x))
 
 
