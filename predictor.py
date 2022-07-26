@@ -160,10 +160,12 @@ print(solution)
 for key, val in pred_json.items():
     left_part = val.split('=')[0]
     right_part = val.split('=')[1]
-    if right_part != '0':
+    if right_part != '0' and left_part != '0':
         solution_not_first = solveset(simplify(Eq(left_part, right_part)), x)
-    else:
+    elif left_part != '0':
         solution_not_first = solveset(simplify(left_part, x))
+    else:
+        solution_not_first = solveset(simplify(right_part, x))
 
     pred_json[key] = solution_not_first
     if pred_json[key] != solution:
