@@ -146,7 +146,7 @@ pprint(pred_json)
 with open('prediction_HTR.json', 'w') as f:
     json.dump(pred_json, f)
 
-
+# решение изначальной задачи
 x = Symbol('x')
 
 left_part = pred_json[0].split('=')[0]
@@ -159,6 +159,7 @@ else:
     solution = solveset(simplify(right_part, x))
 print(solution)
 
+# проверка решения
 for key, val in pred_json.items():
     left_part = val.split('=')[0]
     right_part = val.split('=')[1]
