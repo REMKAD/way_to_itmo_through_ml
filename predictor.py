@@ -153,8 +153,10 @@ left_part = pred_json[0].split('=')[0]
 right_part = pred_json[0].split('=')[1]
 if right_part != '0':
     solution = solveset(simplify(Eq(left_part, right_part)), x)
-else:
+elif left_part != '0':
     solution = solveset(simplify(left_part, x))
+else:
+    solution = solveset(simplify(right_part, x))
 print(solution)
 
 for key, val in pred_json.items():
@@ -168,5 +170,5 @@ for key, val in pred_json.items():
         solution_not_first = solveset(simplify(right_part, x))
 
     pred_json[key] = solution_not_first
-    if pred_json[key] != solution:
+    if str(pred_json[key]) != str(solution):
         print(f'eror in line{key + 1}')
