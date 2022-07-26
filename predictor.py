@@ -4,7 +4,7 @@ import os
 import cv2
 import json
 from matplotlib import pyplot as plt
-from sympy import Symbol, solve, sqrt, preorder_traversal, simplify, Eq, solveset, sin
+from sympy import *
 
 # функции для предсказания
 class InferenceTransform:
@@ -54,7 +54,7 @@ class OcrPredictor:
 
 # импортируем обученную модель
 predictor = OcrPredictor(
-    model_path='new_data/model-13-0.0538.ckpt',
+    model_path='new_data/model-14-0.0544.ckpt',
     config=config_json
 )
 
@@ -126,31 +126,45 @@ for i in range(len(data)):
 # создаем словарь предсказаний
 pred_json = {}
 print_images = True
-predskaz = []
 # считываем строчки и делаем по ним предсказания
 for j in range(len(data_el)):
-    predskaz.append('')
+    predskaz = ''
     for i in range(len(data_el[j])):
         pred = predictor(data_el[j][i])
-        pred_json[i] = pred
+        predskaz += str(pred)
 
         if print_images:
             img = cv2.cvtColor(data_el[j][i], cv2.COLOR_BGR2RGB)
 
             print('Prediction: ', predictor(img))
-            predskaz[j] += predictor(img)
-            print(predskaz)
+    pred_json[j] = predskaz
 
-print(predskaz)
+
+from pprint import pprint
+pprint(pred_json)
+
 with open('prediction_HTR.json', 'w') as f:
     json.dump(pred_json, f)
 
 
 x = Symbol('x')
-sol = solveset(predskaz[0].simplify(), x)
-for i in range(len(predskaz)):
-    if solveset(predskaz[i].simplify(), x) != sol:
-        print(f'eror in line{i+1}')
 
+left_part = pred_json[0].split('=')[0]
+right_part = pred_json[0].split('=')[1]
+if right_part != '0':
+    solution = solveset(simplify(Eq(left_part, right_part)), x)
+else:
+    solution = solveset(simplify(left_part, x))
+print(solution)
 
+for key, val in pred_json.items():
+    left_part = val.split('=')[0]
+    right_part = val.split('=')[1]
+    if right_part != '0':
+        solution_not_first = solveset(simplify(Eq(left_part, right_part)), x)
+    else:
+        solution_not_first = solveset(simplify(left_part, x))
 
+    pred_json[key] = solution_not_first
+    if pred_json[key] != solution:
+        print(f'eror in line{key + 1}')
