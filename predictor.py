@@ -4,7 +4,7 @@ import os
 import cv2
 import json
 from matplotlib import pyplot as plt
-
+from sympy import Symbol, solve, sqrt, preorder_traversal, simplify, Eq, solveset, sin
 
 # функции для предсказания
 class InferenceTransform:
@@ -54,13 +54,13 @@ class OcrPredictor:
 
 # импортируем обученную модель
 predictor = OcrPredictor(
-    model_path='new_data/model-0-0.0601.ckpt',
+    model_path='new_data/model-13-0.0538.ckpt',
     config=config_json
 )
 
 # считываем решение
 
-img = cv2.imread('img\img.jpg')
+img = cv2.imread('img\img.png')
 img_binary = cv2.threshold(img, 145, 255, cv2.THRESH_BINARY)[1]
 # разбиваем цельное решение на отдельные строчки и записываем картинки отдельных строчек в список
 t = False
@@ -126,21 +126,31 @@ for i in range(len(data)):
 # создаем словарь предсказаний
 pred_json = {}
 print_images = True
-
+predskaz = []
 # считываем строчки и делаем по ним предсказания
-for i in range(len(data_el[0])):
-    pred = predictor(data_el[0][i])
-    pred_json[i] = pred
+for j in range(len(data_el)):
+    predskaz.append('')
+    for i in range(len(data_el[j])):
+        pred = predictor(data_el[j][i])
+        pred_json[i] = pred
 
-    if print_images:
-        img = cv2.cvtColor(data_el[0][i], cv2.COLOR_BGR2RGB)
-        plt.imshow(img)
-        plt.show()
-        print('Prediction: ', predictor(img))
+        if print_images:
+            img = cv2.cvtColor(data_el[j][i], cv2.COLOR_BGR2RGB)
+            plt.imshow(img)
+            plt.show()
+            print('Prediction: ', predictor(img))
+            predskaz[j] += predictor(img)
+            print(predskaz)
 
-
+print(predskaz)
 with open('prediction_HTR.json', 'w') as f:
     json.dump(pred_json, f)
 
+
+sol = 0
+with open('prediction_HTR.json') as f:
+    c = json.load(f)
+
+k = [i for i in c.keys()]
 
 

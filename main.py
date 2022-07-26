@@ -65,7 +65,7 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 config_json = {
     "alphabet": "cosinx=-+1234567890()pm",
     "save_dir": "new_data",
-    "num_epochs": 1,
+    "num_epochs": 15,
     "image": {
         "width": 256,
         "height": 32

@@ -57,7 +57,7 @@ class OcrPredictor:
 
 
 predictor = OcrPredictor(
-    model_path='new_data/model-0-0.0601.ckpt',
+    model_path='new_data/model-40-0.0491.ckpt',
     config=config_json
 )
 
@@ -77,10 +77,7 @@ for img_name in os.listdir('img/'):
         plt.imshow(img)
         plt.show()
         print('Prediction: ', predictor(img))
-        count += 1
 
-    if count > 3:
-        print_images = False
 
 with open('prediction_HTR.json', 'w') as f:
     json.dump(pred_json, f)
