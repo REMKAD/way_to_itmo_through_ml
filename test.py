@@ -60,7 +60,7 @@ predictor = OcrPredictor(
 
 # считываем решение
 
-img = cv2.imread('img\img.png')
+img = cv2.imread('img\ko.png')
 img_binary = cv2.threshold(img, 145, 255, cv2.THRESH_BINARY)[1]
 # разбиваем цельное решение на отдельные строчки и записываем картинки отдельных строчек в список
 t = False
@@ -147,24 +147,3 @@ with open('prediction_HTR.json', 'w') as f:
     json.dump(pred_json, f)
 
 
-x = Symbol('x')
-
-left_part = pred_json[0].split('=')[0]
-right_part = pred_json[0].split('=')[1]
-if right_part != '0':
-    solution = solveset(simplify(Eq(left_part, right_part)), x)
-else:
-    solution = solveset(simplify(left_part, x))
-print(solution)
-
-for key, val in pred_json.items():
-    left_part = val.split('=')[0]
-    right_part = val.split('=')[1]
-    if right_part != '0':
-        solution_not_first = solveset(simplify(Eq(left_part, right_part)), x)
-    else:
-        solution_not_first = solveset(simplify(left_part, x))
-
-    pred_json[key] = solution_not_first
-    if pred_json[key] != solution:
-        print(f'eror in line{key + 1}')
